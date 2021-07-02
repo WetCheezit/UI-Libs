@@ -1709,4 +1709,12 @@ inputService.InputChanged:connect(function(input)
 	end
 end)
 
+while wait() do
+	if (game.CoreGui.ScreenGui.Frame.Visible) then
+		game:GetService("UserInputService").MouseIconEnabled = false
+	else
+		game:GetService("UserInputService").MouseIconEnabled = true
+	end
+end
+
 return library
