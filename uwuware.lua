@@ -1,21 +1,17 @@
 local library = {flags = {}, windows = {}, open = true}
-
 --Services
 local runService = game:GetService"RunService"
 local tweenService = game:GetService"TweenService"
 local textService = game:GetService"TextService"
 local inputService = game:GetService"UserInputService"
-
 --Locals
 local dragging, dragInput, dragStart, startPos, dragObject
-
 local blacklistedKeys = { --add or remove keys if you find the need to
 	Enum.KeyCode.Unknown,Enum.KeyCode.W,Enum.KeyCode.A,Enum.KeyCode.S,Enum.KeyCode.D,Enum.KeyCode.Slash,Enum.KeyCode.Tab,Enum.KeyCode.Backspace,Enum.KeyCode.Escape
 }
 local whitelistedMouseinputs = { --add or remove mouse inputs if you find the need to
 	Enum.UserInputType.MouseButton1,Enum.UserInputType.MouseButton2,Enum.UserInputType.MouseButton3
 }
-
 --Functions
 local function round(num, bracket)
 	bracket = bracket or 1
@@ -25,7 +21,6 @@ local function round(num, bracket)
 	end
 	return a
 end
-
 local function keyCheck(x,x1)
 	for _,v in next, x1 do
 		if v == x then
@@ -33,13 +28,11 @@ local function keyCheck(x,x1)
 		end
 	end
 end
-
 local function update(input)
 	local delta = input.Position - dragStart
 	local yPos = (startPos.Y.Offset + delta.Y) < -36 and -36 or startPos.Y.Offset + delta.Y
 	dragObject:TweenPosition(UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, yPos), "Out", "Quint", 0.1, true)
 end
-
 --From: https://devforum.roblox.com/t/how-to-create-a-simple-rainbow-effect-using-tweenService/221849/2
 local chromaColor
 local rainbowTime = 5
@@ -48,7 +41,6 @@ spawn(function()
 		chromaColor = Color3.fromHSV(tick() % rainbowTime / rainbowTime, 1, 1)
 	end
 end)
-
 function library:Create(class, properties)
 	properties = typeof(properties) == "table" and properties or {}
 	local inst = Instance.new(class)
@@ -57,7 +49,6 @@ function library:Create(class, properties)
 	end
 	return inst
 end
-
 local function createOptionHolder(holderTitle, parent, parentTable, subHolder)
 	local size = subHolder and 34 or 40
 	parentTable.main = library:Create("ImageButton", {
@@ -174,7 +165,6 @@ local function createOptionHolder(holderTitle, parent, parentTable, subHolder)
 			parentTable.main:TweenSize(#parentTable.options > 0 and parentTable.open and UDim2.new(0, 230, 0, layout.AbsoluteContentSize.Y + size) or UDim2.new(0, 230, 0, size), "Out", "Quad", 0.2, true)
 		end
 	end)
-
 	function parentTable:SetTitle(newTitle)
 		title.Text = tostring(newTitle)
 	end
@@ -201,7 +191,6 @@ local function createLabel(option, parent)
 		end
 	end})
 end
-
 function createToggle(option, parent)
 	local main = library:Create("TextLabel", {
 		LayoutOrder = option.position,
@@ -221,7 +210,7 @@ function createToggle(option, parent)
 		SizeConstraint = Enum.SizeConstraint.RelativeYY,
 		BackgroundTransparency = 1,
 		Image = "rbxassetid://3570695787",
-		ImageColor3 = option.state and Color3.fromRGB(100, 150, 255) or Color3.fromRGB(100, 100, 100),
+		ImageColor3 = option.state and Color3.fromRGB(255, 65, 65) or Color3.fromRGB(100, 100, 100),
 		ScaleType = Enum.ScaleType.Slice,
 		SliceCenter = Rect.new(100, 100, 100, 100),
 		SliceScale = 0.02,
@@ -233,7 +222,7 @@ function createToggle(option, parent)
 		Size = UDim2.new(1, -4, 1, -4),
 		BackgroundTransparency = 1,
 		Image = "rbxassetid://3570695787",
-		ImageColor3 = option.state and Color3.fromRGB(100, 150, 255) or Color3.fromRGB(20, 20, 20),
+		ImageColor3 = option.state and Color3.fromRGB(255, 65, 65) or Color3.fromRGB(20, 20, 20),
 		ScaleType = Enum.ScaleType.Slice,
 		SliceCenter = Rect.new(100, 100, 100, 100),
 		SliceScale = 0.02,
@@ -283,9 +272,9 @@ function createToggle(option, parent)
 		library.flags[self.flag] = state
 		self.state = state
 		checkmarkHolder:TweenSize(option.state and UDim2.new(1, -8, 1, -8) or UDim2.new(0, 0, 1, -8), "Out", "Quad", 0.2, true)
-		tweenService:Create(tickboxInner, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {ImageColor3 = state and Color3.fromRGB(100, 150, 255) or Color3.fromRGB(20, 20, 20)}):Play()
+		tweenService:Create(tickboxInner, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {ImageColor3 = state and Color3.fromRGB(255, 65, 65) or Color3.fromRGB(20, 20, 20)}):Play()
 		if state then
-			tweenService:Create(tickboxOutline, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {ImageColor3 = Color3.fromRGB(100, 150, 255)}):Play()
+			tweenService:Create(tickboxOutline, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {ImageColor3 = Color3.fromRGB(255, 65, 65)}):Play()
 		else
 			if inContact then
 				tweenService:Create(tickboxOutline, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {ImageColor3 = Color3.fromRGB(140, 140, 140)}):Play()
@@ -295,7 +284,6 @@ function createToggle(option, parent)
 		end
 		self.callback(state)
 	end
-
 	if option.state then
 		delay(1, function() option.callback(true) end)
 	end
@@ -306,7 +294,6 @@ function createToggle(option, parent)
 		end
 	end})
 end
-
 function createButton(option, parent)
 	local main = library:Create("TextLabel", {
 		ZIndex = 2,
@@ -339,7 +326,7 @@ function createButton(option, parent)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 then
 			library.flags[option.flag] = true
 			clicking = true
-			tweenService:Create(round, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {ImageColor3 = Color3.fromRGB(100, 150, 255)}):Play()
+			tweenService:Create(round, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {ImageColor3 = Color3.fromRGB(255, 65, 65)}):Play()
 			option.callback()
 		end
 		if input.UserInputType == Enum.UserInputType.MouseMovement then
@@ -365,13 +352,11 @@ function createButton(option, parent)
 		end
 	end)
 end
-
 local function createBind(option, parent)
 	local binding
 	local holding
 	local loop
 	local text = string.match(option.key, "Mouse") and string.sub(option.key, 1, 5) .. string.sub(option.key, 12, 13) or option.key
-
 	local main = library:Create("TextLabel", {
 		LayoutOrder = option.position,
 		Size = UDim2.new(1, 0, 0, 33),
@@ -421,7 +406,7 @@ local function createBind(option, parent)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 then
 			binding = true
 			bindinput.Text = "..."
-			tweenService:Create(round, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {ImageColor3 = Color3.fromRGB(100, 150, 255)}):Play()
+			tweenService:Create(round, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {ImageColor3 = Color3.fromRGB(255, 65, 65)}):Play()
 		end
 		if input.UserInputType == Enum.UserInputType.MouseMovement then
 			inContact = false
@@ -492,7 +477,6 @@ local function createBind(option, parent)
 		round.Size = UDim2.new(0, -textService:GetTextSize(bindinput.Text, 15, Enum.Font.Gotham, Vector2.new(9e9, 9e9)).X - 16, 1, -10)	
 	end
 end
-
 local function createSlider(option, parent)
 	local main = library:Create("Frame", {
 		LayoutOrder = option.position,
@@ -582,8 +566,8 @@ local function createSlider(option, parent)
 	local inContact
 	main.InputBegan:connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 then
-			tweenService:Create(fill, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {ImageColor3 = Color3.fromRGB(100, 150, 255)}):Play()
-			tweenService:Create(circle, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(3.5, 0, 3.5, 0), ImageColor3 = Color3.fromRGB(100, 150, 255)}):Play()
+			tweenService:Create(fill, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {ImageColor3 = Color3.fromRGB(255, 65, 65)}):Play()
+			tweenService:Create(circle, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(3.5, 0, 3.5, 0), ImageColor3 = Color3.fromRGB(255, 65, 65)}):Play()
 			sliding = true
 			option:SetValue(option.min + ((input.Position.X - slider.AbsolutePosition.X) / slider.AbsoluteSize.X) * (option.max - option.min))
 		end
@@ -601,7 +585,6 @@ local function createSlider(option, parent)
 			option:SetValue(option.min + ((input.Position.X - slider.AbsolutePosition.X) / slider.AbsoluteSize.X) * (option.max - option.min))
 		end
 	end)
-
 	main.InputEnded:connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 then
 			sliding = false
@@ -622,12 +605,10 @@ local function createSlider(option, parent)
 			end
 		end
 	end)
-
 	inputvalue.FocusLost:connect(function()
 		tweenService:Create(circle, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(0, 0, 0, 0), ImageColor3 = Color3.fromRGB(60, 60, 60)}):Play()
 		option:SetValue(tonumber(inputvalue.Text) or option.value)
 	end)
-
 	function option:SetValue(value)
 		value = round(value, option.float)
 		value = math.clamp(value, self.min, self.max)
@@ -644,7 +625,6 @@ local function createSlider(option, parent)
 		self.callback(value)
 	end
 end
-
 local function createList(option, parent, holder)
 	local valueCount = 0
 	
@@ -824,7 +804,6 @@ local function createList(option, parent, holder)
 			end
 		end)
 	end
-
 	if not table.find(option.values, option.value) then
 		option:AddValue(option.value)
 	end
@@ -872,10 +851,8 @@ local function createList(option, parent, holder)
 			end
 		--end)
 	end
-
 	return option
 end
-
 local function createBox(option, parent)
 	local main = library:Create("Frame", {
 		LayoutOrder = option.position,
@@ -958,7 +935,7 @@ local function createBox(option, parent)
 	
 	inputvalue.Focused:connect(function()
 		focused = true
-		tweenService:Create(outline, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {ImageColor3 = Color3.fromRGB(100, 150, 255)}):Play()
+		tweenService:Create(outline, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {ImageColor3 = Color3.fromRGB(255, 65, 65)}):Play()
 	end)
 	
 	inputvalue.FocusLost:connect(function(enter)
@@ -974,7 +951,6 @@ local function createBox(option, parent)
 		self.callback(value, enter)
 	end
 end
-
 local function createColorPickerWindow(option)
 	option.mainHolder = library:Create("ImageButton", {
 		ZIndex = 3,
@@ -1321,7 +1297,6 @@ local function createColorPickerWindow(option)
 	
 	return option
 end
-
 local function createColor(option, parent, holder)
 	option.main = library:Create("TextLabel", {
 		LayoutOrder = option.position,
@@ -1434,29 +1409,23 @@ local function createColor(option, parent, holder)
 		end)
 	end
 end
-
 local function createDivider(option, parent, holder)
 	option.main = library:Create('Frame', {
 		LayoutOrder = option.position,
 		BackgroundTransparency = 1,
-
 		Size = UDim2.new(1, 0, 0, 10),
 		Parent = parent.content;
 	})
-
 	option.divider = library:Create('Frame', {
 		AnchorPoint = Vector2.new(0.5, 0.5),
 		Position = UDim2.fromScale(0.5, 0.5),
-
 		BorderSizePixel = 1,
 		BorderColor3 = Color3.fromRGB(50, 50, 50),
 		BackgroundColor3 = Color3.fromRGB(20, 20, 20),
-
 		Size = UDim2.new(1, -10, 0, 3),
 		Parent = option.main,
 	})
 end
-
 local function loadOptions(option, holder)
 	for _,newOption in next, option.options do
 		if newOption.type == "label" then
@@ -1482,7 +1451,6 @@ local function loadOptions(option, holder)
 		end
 	end
 end
-
 local function getFnctions(parent)
 	function parent:AddLabel(option)
 		option = typeof(option) == "table" and option or {}
@@ -1493,13 +1461,11 @@ local function getFnctions(parent)
 		
 		return option
 	end
-
 	function parent:AddDivider(option)
 		option = type(option) == 'table' and option or {}
 		option.type = 'divider'
 		option.position = #self.options
 		table.insert(self.options, option)
-
 		return options
 	end
 	
@@ -1627,7 +1593,6 @@ local function getFnctions(parent)
 		return option
 	end
 end
-
 function library:CreateWindow(title)
 	local window = {title = tostring(title), options = {}, open = true, canInit = true, init = false, position = #self.windows}
 	getFnctions(window)
@@ -1636,14 +1601,12 @@ function library:CreateWindow(title)
 	
 	return window
 end
-
 local UIToggle
 local UnlockMouse
 function library:Init()
 	
 	self.base = self.base or self:Create("ScreenGui")
 	if (syn and syn.protect_gui) then
-		syn.protect_gui(self.base)
 		self.base.Parent = game:GetService"CoreGui"
 	elseif type(get_hidden_gui) == 'function' then
 		self.base.Parent = get_hidden_gui()
@@ -1671,7 +1634,6 @@ function library:Init()
 		end
 	end
 end
-
 function library:Close()
 	self.open = not self.open
 	self.cursor.Visible = self.open
@@ -1684,7 +1646,6 @@ function library:Close()
 		end
 	end
 end
-
 inputService.InputBegan:connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseButton1 then
 		if library.activePopup then
@@ -1699,7 +1660,6 @@ inputService.InputBegan:connect(function(input)
 		end
 	end
 end)
-
 inputService.InputChanged:connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseMovement and library.cursor then
 		local mouse = inputService:GetMouseLocation() + Vector2.new(0, -36)
