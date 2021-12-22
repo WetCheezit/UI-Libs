@@ -2,23 +2,6 @@
 -- THIS DOCUMENTATION MIGHT HAVE A FEW MISSING THINGS, just look at the source if you can't get something to work
 --
 
---First define the library
-local Library = loadstring(game:HttpGet("https://pastebin.com/raw/edJT9EGX", true))()
---To close/open the UI (after it's been initialized) use Library:Close() to toggle it, use the keybind option to quickly make a toggle for it without hassle (there is an example below)
-
---Making a window
-local Window = Library:CreateWindow"Window"
---There is a special property for windows which can be set to false (Window.canInit = false), if done so the window will not be initialized when Library:Init() is called
-
---Making a folder
-Window:AddFolder"Folder"
---Folders can be used exactly like windows, they can hold all the options, you can even put folders inside of folders inside of folders.. and so on
-
---[[
-	Adding otpions
-	All options will by default have their flag names set to whatever the text is, unless the flag is set
-]]
-
 --Label
 Window:AddLabel({text = "Label"})
 
@@ -45,7 +28,6 @@ Window:AddSlider({text = "Slider", flag = "slider1", value = 0, min = -50, max =
 --Keybind
 Window:AddBind({text = "Bind", flag = "bind", key = "MouseButton1", callback = function() print"pressed" end}) --key can also be Enum.UserInputType.MouseButton1, instead of the name/string
 Window:AddBind({text = "Bind", flag = "bind", hold = true, key = "E" , callback = function(a) if a then print"let go" else print"holding" end end}) --key can also be Enum.KeyCode.E, instead of the name/string
---Window:AddBind({text = "Toggle UI", key = "RightShift", callback = function() library:Close() end})
 
 --Color Picker
 Window:AddColor({text = "Color", flag = "color", color = Color3.fromRGB(255, 65, 65), callback = function(a) print(a) end})
