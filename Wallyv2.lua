@@ -1,6 +1,6 @@
 -- forked by SharKK | SharKK#1954
 
-local library = {count = 0, queue = {}, callbacks = {}, rainbowtable = {}, toggled = true, binds = {}, uikey = Enum.KeyCode.RightShift};
+local library = {count = 0, queue = {}, callbacks = {}, rainbowtable = {}, toggled = true, binds = {}};
 local defaults; do
     local dragger = {}; do
         local mouse        = game:GetService("Players").LocalPlayer:GetMouse();
@@ -39,7 +39,8 @@ local defaults; do
 
         game:GetService('UserInputService').InputBegan:connect(function(key, gpe)
             if (not gpe) then
-                if key.KeyCode == Library.uikey then
+		getgenv().ToggleKey = Enum.KeyCode.RightShift
+                if key.KeyCode == getgenv().ToggleKey then
                     library.toggled = not library.toggled;
                     for i, data in next, library.queue do
                         local pos = (library.toggled and data.p or UDim2.new(-1, 0, -0.5,0))
