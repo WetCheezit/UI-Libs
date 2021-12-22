@@ -2,6 +2,7 @@
 
 local library = {count = 0, queue = {}, callbacks = {}, rainbowtable = {}, toggled = true, binds = {}};
 local defaults; do
+    getgenv().ToggleKey = Enum.KeyCode.RightShift
     local dragger = {}; do
         local mouse        = game:GetService("Players").LocalPlayer:GetMouse();
         local inputService = game:GetService('UserInputService');
@@ -39,7 +40,6 @@ local defaults; do
 
         game:GetService('UserInputService').InputBegan:connect(function(key, gpe)
             if (not gpe) then
-		getgenv().ToggleKey = Enum.KeyCode.RightShift
                 if key.KeyCode == getgenv().ToggleKey then
                     library.toggled = not library.toggled;
                     for i, data in next, library.queue do
