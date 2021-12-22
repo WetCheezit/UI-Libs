@@ -1,4 +1,6 @@
-local library = {count = 0, queue = {}, callbacks = {}, rainbowtable = {}, toggled = true, binds = {}};
+-- forked by SharKK | SharKK#1954
+
+local library = {count = 0, queue = {}, callbacks = {}, rainbowtable = {}, toggled = true, binds = {}, uikey = Enum.KeyCode.RightShift};
 local defaults; do
     local dragger = {}; do
         local mouse        = game:GetService("Players").LocalPlayer:GetMouse();
@@ -9,22 +11,22 @@ local defaults; do
             local s, event = pcall(function()
                 return frame.MouseEnter
             end)
- 
+    
             if s then
                 frame.Active = true;
- 
+                
                 event:connect(function()
                     local input = frame.InputBegan:connect(function(key)
                         if key.UserInputType == Enum.UserInputType.MouseButton1 then
                             local objectPosition = Vector2.new(mouse.X - frame.AbsolutePosition.X, mouse.Y - frame.AbsolutePosition.Y);
                             while heartbeat:wait() and inputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
                                 pcall(function()
-                                    frame:TweenPosition(UDim2.new(0, mouse.X - objectPosition.X + (frame.Size.X.Offset * frame.AnchorPoint.X), 0, mouse.Y - objectPosition.Y + (frame.Size.Y.Offset * frame.AnchorPoint.Y)), 'Out', 'Linear', 0.1, true);
+                                    frame:TweenPosition(UDim2.new(0, mouse.X - objectPosition.X, 0, mouse.Y - objectPosition.Y), 'Out', 'Linear', 0.1, true);
                                 end)
                             end
                         end
                     end)
- 
+    
                     local leave;
                     leave = frame.MouseLeave:connect(function()
                         input:disconnect();
@@ -33,21 +35,22 @@ local defaults; do
                 end)
             end
         end
- 
+
+
         game:GetService('UserInputService').InputBegan:connect(function(key, gpe)
             if (not gpe) then
-                if key.KeyCode == Enum.KeyCode.F15 then
+                if key.KeyCode == Library.uikey then
                     library.toggled = not library.toggled;
                     for i, data in next, library.queue do
-local pos = (library.toggled and data.p or UDim2.new(-1, 0, -0.5,0))
-data.w:TweenPosition(pos, (library.toggled and 'Out' or 'In'), 'Quad', 0.15, true)
+                        local pos = (library.toggled and data.p or UDim2.new(-1, 0, -0.5,0))
+                        data.w:TweenPosition(pos, (library.toggled and 'Out' or 'In'), 'Quad', 0.15, true)
                         wait();
                     end
                 end
             end
         end)
     end
- 
+    
     local types = {}; do
         types.__index = types;
         function types.window(name, options)
@@ -107,25 +110,25 @@ data.w:TweenPosition(pos, (library.toggled and 'Out' or 'In'), 'Quad', 0.15, tru
                     })
                 });
             })
- 
+            
             if options.underlinecolor == "rainbow" then
                 table.insert(library.rainbowtable, newWindow:FindFirstChild('Underline'))
             end
- 
+
             local window = setmetatable({
                 count = 0;
                 object = newWindow;
                 container = newWindow.container;
                 toggled = true;
                 flags   = {};
- 
+
             }, types)
- 
+
             table.insert(library.queue, {
                 w = window.object;
                 p = window.object.Position;
             })
- 
+
             newWindow:FindFirstChild("window_toggle").MouseButton1Click:connect(function()
                 window.toggled = not window.toggled;
                 newWindow:FindFirstChild("window_toggle").Text = (window.toggled and "+" or "-")
@@ -139,20 +142,20 @@ data.w:TweenPosition(pos, (library.toggled and 'Out' or 'In'), 'Quad', 0.15, tru
                         y = y + v.AbsoluteSize.Y;
                     end
                 end 
- 
+
                 local targetSize = window.toggled and UDim2.new(1, 0, 0, y+5) or UDim2.new(1, 0, 0, 0);
                 local targetDirection = window.toggled and "In" or "Out"
- 
-                window.container:TweenSize(targetSize, targetDirection, "Quad", 0.15, true)
-                wait(.15)
+
+                window.container:TweenSize(targetSize, targetDirection, "Quint", .3, true)
+                wait(.3)
                 if window.toggled then
                     window.container.ClipsDescendants = false;
                 end
             end)
- 
+
             return window;
         end
- 
+        
         function types:Resize()
             local y = 0;
             for i, v in next, self.container:GetChildren() do
@@ -162,7 +165,7 @@ data.w:TweenPosition(pos, (library.toggled and 'Out' or 'In'), 'Quad', 0.15, tru
             end 
             self.container.Size = UDim2.new(1, 0, 0, y+5)
         end
- 
+        
         function types:GetOrder() 
             local c = 0;
             for i, v in next, self.container:GetChildren() do
@@ -172,38 +175,15 @@ data.w:TweenPosition(pos, (library.toggled and 'Out' or 'In'), 'Quad', 0.15, tru
             end
             return c
         end
- 
-        function types:Label(text)
-            local v = game:GetService'TextService':GetTextSize(text, 18, Enum.Font.SourceSans, Vector2.new(math.huge, math.huge))
-            local object = library:Create('Frame', {
-                Size = UDim2.new(1, 0, 0, v.Y + 5);
-                BackgroundTransparency  = 1;
-                library:Create('TextLabel', {
-                    Size = UDim2.new(1, 0, 1, 0);
-                    Position = UDim2.new(0, 10, 0, 0);
-                    LayoutOrder = self:GetOrder();
- 
-                    Text = text;
-                    TextSize = 18;
-                    Font = Enum.Font.SourceSans;
-                    TextColor3 = Color3.fromRGB(255, 255, 255);
-                    BackgroundTransparency = 1;
-                    TextXAlignment = Enum.TextXAlignment.Left;
-                    TextWrapped = true;
-                });
-                Parent = self.container
-            })
-            self:Resize();
-        end
- 
+        
         function types:Toggle(name, options, callback)
             local default  = options.default or false;
             local location = options.location or self.flags;
             local flag     = options.flag or "";
             local callback = callback or function() end;
- 
+            
             location[flag] = default;
- 
+
             local check = library:Create('Frame', {
                 BackgroundTransparency = 1;
                 Size = UDim2.new(1, 0, 0, 25);
@@ -236,20 +216,20 @@ data.w:TweenPosition(pos, (library.toggled and 'Out' or 'In'), 'Quad', 0.15, tru
                 });
                 Parent = self.container;
             });
- 
+                
             local function click(t)
                 location[flag] = not location[flag];
                 callback(location[flag])
                 check:FindFirstChild(name).Checkmark.Text = location[flag] and utf8.char(10003) or "";
             end
- 
+
             check:FindFirstChild(name).Checkmark.MouseButton1Click:connect(click)
             library.callbacks[flag] = click;
- 
+
             if location[flag] == true then
                 callback(location[flag])
             end
- 
+
             self:Resize();
             return {
                 Set = function(self, b)
@@ -259,10 +239,10 @@ data.w:TweenPosition(pos, (library.toggled and 'Out' or 'In'), 'Quad', 0.15, tru
                 end
             }
         end
- 
+        
         function types:Button(name, callback)
             callback = callback or function() end;
- 
+            
             local check = library:Create('Frame', {
                 BackgroundTransparency = 1;
                 Size = UDim2.new(1, 0, 0, 25);
@@ -282,17 +262,17 @@ data.w:TweenPosition(pos, (library.toggled and 'Out' or 'In'), 'Quad', 0.15, tru
                 });
                 Parent = self.container;
             });
- 
+            
             check:FindFirstChild(name).MouseButton1Click:connect(callback)
             self:Resize();
- 
+
             return {
                 Fire = function()
                     callback();
                 end
             }
         end
- 
+        
         function types:Box(name, options, callback) --type, default, data, location, flag)
             local type   = options.type or "";
             local default = options.default or "";
@@ -302,14 +282,14 @@ data.w:TweenPosition(pos, (library.toggled and 'Out' or 'In'), 'Quad', 0.15, tru
             local callback = callback or function() end;
             local min      = options.min or 0;
             local max      = options.max or 9e9;
- 
+
             if type == 'number' and (not tonumber(default)) then
                 location[flag] = default;
             else
                 location[flag] = "";
                 default = "";
             end
- 
+
             local check = library:Create('Frame', {
                 BackgroundTransparency = 1;
                 Size = UDim2.new(1, 0, 0, 25);
@@ -343,7 +323,7 @@ data.w:TweenPosition(pos, (library.toggled and 'Out' or 'In'), 'Quad', 0.15, tru
                 });
                 Parent = self.container;
             });
- 
+        
             local box = check:FindFirstChild(name):FindFirstChild('Box');
             box.FocusLost:connect(function(e)
                 local old = location[flag];
@@ -358,38 +338,38 @@ data.w:TweenPosition(pos, (library.toggled and 'Out' or 'In'), 'Quad', 0.15, tru
                 else
                     location[flag] = tostring(box.Text)
                 end
- 
+
                 callback(location[flag], old, e)
             end)
- 
+            
             if type == 'number' then
                 box:GetPropertyChangedSignal('Text'):connect(function()
                     box.Text = string.gsub(box.Text, "[%a+]", "");
                 end)
             end
- 
+            
             self:Resize();
             return box
         end
- 
+        
         function types:Bind(name, options, callback)
             local location     = options.location or self.flags;
             local keyboardOnly = options.kbonly or false
             local flag         = options.flag or "";
             local callback     = callback or function() end;
             local default      = options.default;
- 
+
             if keyboardOnly and (not tostring(default):find('MouseButton')) then
                 location[flag] = default
             end
- 
+            
             local banned = {
                 Return = true;
                 Space = true;
                 Tab = true;
                 Unknown = true;
             }
- 
+            
             local shortNames = {
                 RightControl = 'RightCtrl';
                 LeftControl = 'LeftCtrl';
@@ -398,12 +378,12 @@ data.w:TweenPosition(pos, (library.toggled and 'Out' or 'In'), 'Quad', 0.15, tru
                 MouseButton1 = "Mouse1";
                 MouseButton2 = "Mouse2";
             }
- 
+            
             local allowed = {
                 MouseButton1 = true;
                 MouseButton2 = true;
             }      
- 
+
             local nm = (default and (shortNames[default.Name] or default.Name) or "None");
             local check = library:Create('Frame', {
                 BackgroundTransparency = 1;
@@ -440,21 +420,21 @@ data.w:TweenPosition(pos, (library.toggled and 'Out' or 'In'), 'Quad', 0.15, tru
                 });
                 Parent = self.container;
             });
- 
+             
             local button = check:FindFirstChild(name).Keybind;
             button.MouseButton1Click:connect(function()
                 library.binding = true
- 
+
                 button.Text = "..."
                 local a, b = game:GetService('UserInputService').InputBegan:wait();
                 local name = tostring(a.KeyCode.Name);
                 local typeName = tostring(a.UserInputType.Name);
- 
+
                 if (a.UserInputType ~= Enum.UserInputType.Keyboard and (allowed[a.UserInputType.Name]) and (not keyboardOnly)) or (a.KeyCode and (not banned[a.KeyCode.Name])) then
                     local name = (a.UserInputType ~= Enum.UserInputType.Keyboard and a.UserInputType.Name or a.KeyCode.Name);
                     location[flag] = (a);
                     button.Text = shortNames[name] or name;
- 
+                    
                 else
                     if (location[flag]) then
                         if (not pcall(function()
@@ -468,35 +448,35 @@ data.w:TweenPosition(pos, (library.toggled and 'Out' or 'In'), 'Quad', 0.15, tru
                         end
                     end
                 end
- 
+
                 wait(0.1)  
                 library.binding = false;
             end)
- 
+            
             if location[flag] then
                 button.Text = shortNames[tostring(location[flag].Name)] or tostring(location[flag].Name)
             end
- 
+
             library.binds[flag] = {
                 location = location;
                 callback = callback;
             };
- 
+
             self:Resize();
         end
- 
+    
         function types:Section(name)
             local order = self:GetOrder();
             local determinedSize = UDim2.new(1, 0, 0, 25)
             local determinedPos = UDim2.new(0, 0, 0, 4);
             local secondarySize = UDim2.new(1, 0, 0, 20);
- 
+                        
             if order == 0 then
                 determinedSize = UDim2.new(1, 0, 0, 21)
                 determinedPos = UDim2.new(0, 0, 0, -1);
                 secondarySize = nil
             end
- 
+            
             local check = library:Create('Frame', {
                 Name = 'Section';
                 BackgroundTransparency = 1;
@@ -520,10 +500,10 @@ data.w:TweenPosition(pos, (library.toggled and 'Out' or 'In'), 'Quad', 0.15, tru
                 });
                 Parent = self.container;
             });
- 
+        
             self:Resize();
         end
- 
+
         function types:Slider(name, options, callback)
             local default = options.default or options.min;
             local min     = options.min or 0;
@@ -532,9 +512,9 @@ data.w:TweenPosition(pos, (library.toggled and 'Out' or 'In'), 'Quad', 0.15, tru
             local precise  = options.precise  or false -- e.g 0, 1 vs 0, 0.1, 0.2, ...
             local flag     = options.flag or "";
             local callback = callback or function() end
- 
+
             location[flag] = default;
- 
+
             local check = library:Create('Frame', {
                 BackgroundTransparency = 1;
                 Size = UDim2.new(1, 0, 0, 25);
@@ -588,45 +568,45 @@ data.w:TweenPosition(pos, (library.toggled and 'Out' or 'In'), 'Quad', 0.15, tru
                             BackgroundTransparency = 0;
                             Position = UDim2.new(0, 0, 0.5, 0);
                             Size     = UDim2.new(1, 0, 0, 1);
-                            BackgroundColor3 = Color3.fromRGB(255, 255, 255);
+                            BackgroundColor3 = library.options.textcolor;
                             BorderSizePixel = 0;
                         });
                     })
                 });
                 Parent = self.container;
             });
- 
+
             local overlay = check:FindFirstChild(name);
- 
+
             local renderSteppedConnection;
             local inputBeganConnection;
             local inputEndedConnection;
             local mouseLeaveConnection;
             local mouseDownConnection;
             local mouseUpConnection;
- 
+
             check:FindFirstChild(name).Container.MouseEnter:connect(function()
                 local function update()
                     if renderSteppedConnection then renderSteppedConnection:disconnect() end 
- 
- 
+                    
+
                     renderSteppedConnection = game:GetService('RunService').RenderStepped:connect(function()
                         local mouse = game:GetService("UserInputService"):GetMouseLocation()
                         local percent = (mouse.X - overlay.Container.AbsolutePosition.X) / (overlay.Container.AbsoluteSize.X)
                         percent = math.clamp(percent, 0, 1)
                         percent = tonumber(string.format("%.2f", percent))
- 
+
                         overlay.Container.Button.Position = UDim2.new(math.clamp(percent, 0, 0.99), 0, 0, 1)
- 
+                        
                         local num = min + (max - min) * percent
                         local value = (precise and num or math.floor(num))
- 
+
                         overlay.Container.ValueLabel.Text = value;
                         callback(tonumber(value))
                         location[flag] = tonumber(value)
                     end)
                 end
- 
+
                 local function disconnect()
                     if renderSteppedConnection then renderSteppedConnection:disconnect() end
                     if inputBeganConnection then inputBeganConnection:disconnect() end
@@ -634,19 +614,19 @@ data.w:TweenPosition(pos, (library.toggled and 'Out' or 'In'), 'Quad', 0.15, tru
                     if mouseLeaveConnection then mouseLeaveConnection:disconnect() end
                     if mouseUpConnection then mouseUpConnection:disconnect() end
                 end
- 
+
                 inputBeganConnection = check:FindFirstChild(name).Container.InputBegan:connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 then
                         update()
                     end
                 end)
- 
+
                 inputEndedConnection = check:FindFirstChild(name).Container.InputEnded:connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 then
                         disconnect()
                     end
                 end)
- 
+
                 mouseDownConnection = check:FindFirstChild(name).Container.Button.MouseButton1Down:connect(update)
                 mouseUpConnection   = game:GetService("UserInputService").InputEnded:connect(function(a, b)
                     if a.UserInputType == Enum.UserInputType.MouseButton1 and (mouseDownConnection.Connected) then
@@ -654,31 +634,31 @@ data.w:TweenPosition(pos, (library.toggled and 'Out' or 'In'), 'Quad', 0.15, tru
                     end
                 end)
             end)    
- 
+
             if default ~= min then
                 local percent = 1 - ((max - default) / (max - min))
                 local number  = default 
- 
+
                 number = tonumber(string.format("%.2f", number))
                 if (not precise) then
                     number = math.floor(number)
                 end
- 
+
                 overlay.Container.Button.Position  = UDim2.new(math.clamp(percent, 0, 0.99), 0,  0, 1) 
                 overlay.Container.ValueLabel.Text  = number
             end
- 
+
             self:Resize();
             return {
                 Set = function(self, value)
                     local percent = 1 - ((max - value) / (max - min))
                     local number  = value 
- 
+
                     number = tonumber(string.format("%.2f", number))
                     if (not precise) then
                         number = math.floor(number)
                     end
- 
+
                     overlay.Container.Button.Position  = UDim2.new(math.clamp(percent, 0, 0.99), 0,  0, 1) 
                     overlay.Container.ValueLabel.Text  = number
                     location[flag] = number
@@ -686,13 +666,13 @@ data.w:TweenPosition(pos, (library.toggled and 'Out' or 'In'), 'Quad', 0.15, tru
                 end
             }
         end 
- 
+
         function types:SearchBox(text, options, callback)
             local list = options.list or {};
             local flag = options.flag or "";
             local location = options.location or self.flags;
             local callback = callback or function() end;
- 
+
             local busy = false;
             local box = library:Create('Frame', {
                 BackgroundTransparency = 1;
@@ -729,7 +709,7 @@ data.w:TweenPosition(pos, (library.toggled and 'Out' or 'In'), 'Quad', 0.15, tru
                 });
                 Parent = self.container;
             })
- 
+
             local function rebuild(text)
                 box:FindFirstChild('Box').Container.ScrollBarThickness = 0
                 for i, child in next, box:FindFirstChild('Box').Container:GetChildren() do
@@ -737,7 +717,7 @@ data.w:TweenPosition(pos, (library.toggled and 'Out' or 'In'), 'Quad', 0.15, tru
                         child:Destroy();
                     end
                 end
- 
+
                 if #text > 0 then
                     for i, v in next, list do
                         if string.sub(string.lower(v), 1, string.len(text)) == string.lower(text) then
@@ -755,46 +735,46 @@ data.w:TweenPosition(pos, (library.toggled and 'Out' or 'In'), 'Quad', 0.15, tru
                                 BackgroundColor3 = library.options.btncolor;
                                 ZIndex = 2;
                             })
- 
+
                             button.MouseButton1Click:connect(function()
                                 busy = true;
                                 box:FindFirstChild('Box').Text = button.Text;
                                 wait();
                                 busy = false;
- 
+
                                 location[flag] = button.Text;
                                 callback(location[flag])
- 
+
                                 box:FindFirstChild('Box').Container.ScrollBarThickness = 0
                                 for i, child in next, box:FindFirstChild('Box').Container:GetChildren() do
                                     if (not child:IsA('UIListLayout')) then
                                         child:Destroy();
                                     end
                                 end
-                                box:FindFirstChild('Box').Container:TweenSize(UDim2.new(1, 0, 0, 0), 'Out', 'Quad', 0.25, true)
+                                box:FindFirstChild('Box').Container:TweenSize(UDim2.new(1, 0, 0, 0), 'Out', 'Quint', .3, true)
                             end)
                         end
                     end
                 end
- 
+
                 local c = box:FindFirstChild('Box').Container:GetChildren()
                 local ry = (20 * (#c)) - 20
- 
+
                 local y = math.clamp((20 * (#c)) - 20, 0, 100)
                 if ry > 100 then
                     box:FindFirstChild('Box').Container.ScrollBarThickness = 5;
                 end
- 
-                box:FindFirstChild('Box').Container:TweenSize(UDim2.new(1, 0, 0, y), 'Out', 'Quad', 0.25, true)
+
+                box:FindFirstChild('Box').Container:TweenSize(UDim2.new(1, 0, 0, y), 'Out', 'Quint', .3, true)
                 box:FindFirstChild('Box').Container.CanvasSize = UDim2.new(1, 0, 0, (20 * (#c)) - 20)
             end
- 
+
             box:FindFirstChild('Box'):GetPropertyChangedSignal('Text'):connect(function()
                 if (not busy) then
                     rebuild(box:FindFirstChild('Box').Text)
                 end
             end);
- 
+
             local function reload(new_list)
                 list = new_list;
                 rebuild("")
@@ -802,13 +782,13 @@ data.w:TweenPosition(pos, (library.toggled and 'Out' or 'In'), 'Quad', 0.15, tru
             self:Resize();
             return reload, box:FindFirstChild('Box');
         end
- 
+        
         function types:Dropdown(name, options, callback)
             local location = options.location or self.flags;
             local flag = options.flag or "";
             local callback = callback or function() end;
             local list = options.list or {};
- 
+
             location[flag] = list[1]
             local check = library:Create('Frame', {
                 BackgroundTransparency = 1;
@@ -849,31 +829,31 @@ data.w:TweenPosition(pos, (library.toggled and 'Out' or 'In'), 'Quad', 0.15, tru
                 });
                 Parent = self.container;
             });
- 
+            
             local button = check:FindFirstChild('dropdown_lbl').drop;
             local input;
- 
+            
             button.MouseButton1Click:connect(function()
                 if (input and input.Connected) then
                     return
                 end 
- 
+                
                 check:FindFirstChild('dropdown_lbl'):WaitForChild('Selection').TextColor3 = Color3.fromRGB(60, 60, 60);
                 check:FindFirstChild('dropdown_lbl'):WaitForChild('Selection').Text = name;
                 local c = 0;
                 for i, v in next, list do
                     c = c + 20;
                 end
- 
+
                 local size = UDim2.new(1, 0, 0, c)
- 
+
                 local clampedSize;
                 local scrollSize = 0;
                 if size.Y.Offset > 100 then
                     clampedSize = UDim2.new(1, 0, 0, 100)
                     scrollSize = 5;
                 end
- 
+                
                 local goSize = (clampedSize ~= nil and clampedSize) or size;    
                 local container = library:Create('ScrollingFrame', {
                     TopImage = 'rbxasset://textures/ui/Scroll/scroll-middle.png';
@@ -893,7 +873,7 @@ data.w:TweenPosition(pos, (library.toggled and 'Out' or 'In'), 'Quad', 0.15, tru
                         SortOrder = Enum.SortOrder.LayoutOrder
                     })
                 })
- 
+
                 for i, v in next, list do
                     local btn = library:Create('TextButton', {
                         Size = UDim2.new(1, 0, 0, 20);
@@ -909,45 +889,45 @@ data.w:TweenPosition(pos, (library.toggled and 'Out' or 'In'), 'Quad', 0.15, tru
                         TextStrokeTransparency = library.options.textstroke;
                         TextStrokeColor3 = library.options.strokecolor;
                     })
- 
+                    
                     btn.MouseButton1Click:connect(function()
                         check:FindFirstChild('dropdown_lbl'):WaitForChild('Selection').TextColor3 = library.options.textcolor
                         check:FindFirstChild('dropdown_lbl'):WaitForChild('Selection').Text = btn.Text;
- 
+
                         location[flag] = tostring(btn.Text);
                         callback(location[flag])
- 
+
                         game:GetService('Debris'):AddItem(container, 0)
                         input:disconnect();
                     end)
                 end
- 
-                container:TweenSize(goSize, 'Out', 'Quad', 0.15, true)
- 
+                
+                container:TweenSize(goSize, 'Out', 'Quint', .3, true)
+                
                 local function isInGui(frame)
                     local mloc = game:GetService('UserInputService'):GetMouseLocation();
                     local mouse = Vector2.new(mloc.X, mloc.Y - 36);
- 
+                    
                     local x1, x2 = frame.AbsolutePosition.X, frame.AbsolutePosition.X + frame.AbsoluteSize.X;
                     local y1, y2 = frame.AbsolutePosition.Y, frame.AbsolutePosition.Y + frame.AbsoluteSize.Y;
- 
+                
                     return (mouse.X >= x1 and mouse.X <= x2) and (mouse.Y >= y1 and mouse.Y <= y2)
                 end
- 
+                
                 input = game:GetService('UserInputService').InputBegan:connect(function(a)
                     if a.UserInputType == Enum.UserInputType.MouseButton1 and (not isInGui(container)) then
                         check:FindFirstChild('dropdown_lbl'):WaitForChild('Selection').TextColor3 = library.options.textcolor
                         check:FindFirstChild('dropdown_lbl'):WaitForChild('Selection').Text       = location[flag];
- 
-                        container:TweenSize(UDim2.new(1, 0, 0, 0), 'In', 'Quad', 0.15, true)
+
+                        container:TweenSize(UDim2.new(1, 0, 0, 0), 'In', 'Quint', .3, true)
                         wait(0.15)
- 
+
                         game:GetService('Debris'):AddItem(container, 0)
                         input:disconnect();
                     end
                 end)
             end)
- 
+            
             self:Resize();
             local function reload(self, array)
                 options = array;
@@ -959,18 +939,18 @@ data.w:TweenPosition(pos, (library.toggled and 'Out' or 'In'), 'Quad', 0.15, tru
                 check:FindFirstChild('dropdown_lbl'):WaitForChild('Selection').TextColor3 = library.options.textcolor
                 game:GetService('Debris'):AddItem(container, 0)
             end
- 
+
             return {
                 Refresh = reload;
             }
         end
     end
- 
+    
     function library:Create(class, data)
         local obj = Instance.new(class);
         for i, v in next, data do
             if i ~= 'Parent' then
- 
+                
                 if typeof(v) == "Instance" then
                     v.Parent = obj;
                 else
@@ -978,12 +958,43 @@ data.w:TweenPosition(pos, (library.toggled and 'Out' or 'In'), 'Quad', 0.15, tru
                 end
             end
         end
- 
+        
         obj.Parent = data.Parent;
         return obj
     end
- 
+    
+	default = {
+        topcolor       = Color3.fromRGB(30, 30, 30);
+        titlecolor     = Color3.fromRGB(255, 255, 255);
+        
+        underlinecolor = Color3.fromRGB(0, 255, 140);
+        bgcolor        = Color3.fromRGB(35, 35, 35);
+        boxcolor       = Color3.fromRGB(35, 35, 35);
+        btncolor       = Color3.fromRGB(25, 25, 25);
+        dropcolor      = Color3.fromRGB(25, 25, 25);
+        sectncolor     = Color3.fromRGB(25, 25, 25);
+        bordercolor    = Color3.fromRGB(60, 60, 60);
+
+        font           = Enum.Font.SourceSans;
+        titlefont      = Enum.Font.Code;
+
+        fontsize       = 17;
+        titlesize      = 18;
+
+        textstroke     = 1;
+        titlestroke    = 1;
+
+        strokecolor    = Color3.fromRGB(0, 0, 0);
+
+        textcolor      = Color3.fromRGB(255, 255, 255);
+        titletextcolor = Color3.fromRGB(255, 255, 255);
+
+        placeholdercolor = Color3.fromRGB(255, 255, 255);
+        titlestrokecolor = Color3.fromRGB(0, 0, 0);
+    }
+	
     function library:CreateWindow(name, options)
+		
         if (not library.container) then
             library.container = self:Create("ScreenGui", {
                 self:Create('Frame', {
@@ -996,48 +1007,20 @@ data.w:TweenPosition(pos, (library.toggled and 'Out' or 'In'), 'Quad', 0.15, tru
                 Parent = game:GetService("CoreGui");
             }):FindFirstChild('Container');
         end
- 
         if (not library.options) then
-            library.options = setmetatable(options or {}, {__index = defaults})
+			library.options = setmetatable(options or {}, {__index = defaults})
         end
- 
+		if (options) then
+			library.options = setmetatable(options, {__index = default})
+		end
+		
         local window = types.window(name, library.options);
         dragger.new(window.object);
         return window
     end
- 
-    default = {
-        topcolor       = Color3.fromRGB(30, 30, 30);
-        titlecolor     = Color3.fromRGB(255, 255, 255);
- 
-        underlinecolor = Color3.fromRGB(0, 255, 140);
-        bgcolor        = Color3.fromRGB(35, 35, 35);
-        boxcolor       = Color3.fromRGB(35, 35, 35);
-        btncolor       = Color3.fromRGB(25, 25, 25);
-        dropcolor      = Color3.fromRGB(25, 25, 25);
-        sectncolor     = Color3.fromRGB(25, 25, 25);
-        bordercolor    = Color3.fromRGB(80, 80, 80);
- 
-        font           = Enum.Font.SourceSans;
-        titlefont      = Enum.Font.Code;
- 
-        fontsize       = 17;
-        titlesize      = 18;
- 
-        textstroke     = 1;
-        titlestroke    = 1;
- 
-        strokecolor    = Color3.fromRGB(0, 0, 0);
- 
-        textcolor      = Color3.fromRGB(255, 255, 255);
-        titletextcolor = Color3.fromRGB(255, 255, 255);
- 
-        placeholdercolor = Color3.fromRGB(255, 255, 255);
-        titlestrokecolor = Color3.fromRGB(0, 0, 0);
-    }
- 
+
     library.options = setmetatable({}, {__index = default})
- 
+
     spawn(function()
         while true do
             for i=0, 1, 1 / 300 do              
@@ -1048,7 +1031,7 @@ data.w:TweenPosition(pos, (library.toggled and 'Out' or 'In'), 'Quad', 0.15, tru
             end;
         end
     end)
- 
+
     local function isreallypressed(bind, inp)
         local key = bind
         if typeof(key) == "Instance" then
@@ -1064,7 +1047,7 @@ data.w:TweenPosition(pos, (library.toggled and 'Out' or 'In'), 'Quad', 0.15, tru
             return key == inp.KeyCode
         end
     end
- 
+
     game:GetService("UserInputService").InputBegan:connect(function(input)
         if (not library.binding) then
             for idx, binds in next, library.binds do
@@ -1076,3 +1059,5 @@ data.w:TweenPosition(pos, (library.toggled and 'Out' or 'In'), 'Quad', 0.15, tru
         end
     end)
 end
+
+return library
