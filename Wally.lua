@@ -38,7 +38,7 @@ local defaults; do
 	
 	game:GetService('UserInputService').InputBegan:connect(function(key, gpe)
             if (not gpe) then
-                if key.KeyCode == Library.uikey then
+                if key.KeyCode == Enum.KeyCode.RightControl then
                     library.toggled = not library.toggled;
                     for i, data in next, library.queue do
                         local pos = (library.toggled and data.p or UDim2.new(-1, 0, -0.5,0))
