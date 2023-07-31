@@ -1,4 +1,4 @@
-local library = {flags = {}, windows = {}, open = true}
+local library = {flags = {}, windows = {}, connections = {}, open = true}
 --Services
 local runService = game:GetService"RunService"
 local tweenService = game:GetService"TweenService"
@@ -1636,6 +1636,11 @@ function library:Close()
 			window.main.Visible = self.open
 		end
 	end
+end
+function library:Connect(signal, callback)
+	local connection = signal:Connect(callback);
+	table.insert(self.connections, connection);
+	return connection;
 end
 inputService.InputBegan:connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseButton1 then
